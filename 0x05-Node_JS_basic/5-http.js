@@ -1,53 +1,23 @@
+const http = require('http');
 const fs = require('fs');
-const path = require('path');
 const { argv } = require('process');
 
-function calculateStudentStats(dataPath, outputStream) {
-  if (!fs.existsSync(dataPath)) {
-    throw new Error('Student data file does not exist');
-  }
-
-  const studentData = fs.readFileSync(dataPath, 'utf8');
-  const parsedData = [];
-
-  studentData.split('\n').forEach((line) => {
-    parsedData.push(line.split(','));
-  });
-
-  parsedData.shift(); // Remove header row
-
-  const studentList = [];
-  const uniqueStreams = new Set();
-
-  parsedData.forEach((row) => {
-    const studentName = row[0];
-    const studentStream = row[3];
-
-    studentList.push({ name: studentName, stream: studentStream });
-    uniqueStreams.add(studentStream);
-  });
-
-  const streamCounts = {};
-
-  uniqueStreams.forEach((stream) => {
-    streamCounts[stream] = 0;
-  });
-
-  studentList.forEach((student) => {
-    streamCounts[student.stream]++;
-  });
-
-  outputStream.write(`Total number of students: ${studentList.length}\n`);
-
-  for (const [stream, count] of Object.entries(streamCounts)) {
-    const studentNames = studentList
-      .filter((student) => student.stream === stream)
-      .map((student) => student.name)
-      .join(', ');
-
-    outputStream.write(`\nStream: ${stream}
-                      Student Count: ${count}
-                      Student Names: ${studentNames}\n`);
+function countStudents(path, stream) {
+  if (fs.existsSync(path)) {
+    const data = fs.readFileSync(path, 'utf8');
+    const result = data.split('\n').map((line) => line.split(','));
+    result.shift();
+    const newis = result.map((data) => [data[0], data[3]]);
+    const fields = new Set(newis.map((item) => item[1]));
+    const final = {};
+    fields.forEach((data) => { final[data] = 0; });
+    newis.forEach((data) => { final[data[1]] += 1; });
+    stream.write(`Number of students: ${result.length}\n`);
+    fields.forEach((data) => {
+      stream.write(`Number of students in ${data}: ${final[data]}. List: ${newis.filter((n) => n[1] === data).map((n) => n[0]).join(', ')}\n`);
+    });
+  } else {
+    throw new Error('Cannot load the database');
   }
 }
 
@@ -58,21 +28,18 @@ const app = http.createServer((req, res) => {
   res.statusCode = 200;
   res.setHeader('Content-Type', 'text/plain');
   const { url } = req;
-
   if (url === '/') {
-    res.write('Hello Holberton School!');
-    res.end();
+    res.end('Hello Holberton School!');
   } else if (url === '/students') {
-    const studentDataPath = path.join(argv[2], 'student_data.csv');
-
-    res.write('Student Data Statistics:\n');
-
+    res.write('This is the list of our students\n');
     try {
-      calculateStudentStats(studentDataPath, res);
-      res.end();
+      countStudents(argv[2], res);
     } catch (err) {
       res.end(err.message);
     }
+  } else {
+    res.statusCode = 404;
+    res.end('Not Found');
   }
 });
 
