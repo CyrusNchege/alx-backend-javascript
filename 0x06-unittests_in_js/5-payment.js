@@ -6,4 +6,3 @@ function sendPaymentRequestToApi(totalAmount, totalShipping) {
 }
 
 module.exports = sendPaymentRequestToApi;
-Create 4-payment.test.js:
