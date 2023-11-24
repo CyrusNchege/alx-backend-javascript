@@ -1,0 +1,11 @@
+{
+  "name": "9-api",
+  "version": "1.0.0",
+  "description": "Regex integration testing",
+  "main": "api.js",
+  "scripts": {
+    "test": "mocha api.test.js"
+  },
+  "author": "cyrus",
+  "license": "ISC"
+}
