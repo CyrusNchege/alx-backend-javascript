@@ -1,0 +1,11 @@
+{
+  "name": "10-api",
+  "version": "1.0.0",
+  "description": " Deep equality & Post integration testing",
+  "main": "api.js",
+  "scripts": {
+    "test": "./node_modules/mocha/bin/mocha"
+  },
+  "author": "cyrus",
+  "license": "ISC"
+}
